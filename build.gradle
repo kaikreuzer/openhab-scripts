@@ -177,8 +177,11 @@ task buildChangelog {
 
             // Assign UI PRs to the Main UI
             if (repoName == "openhab-webui") {
-              if (pullAddon == "misc") {
+              if (pullAddon == "misc" || pullAddon == "MainUI" || pullAddon == "blockly") {
                 pullAddon = "Main UI"
+              }
+              if (pullAddon == "BasicUI") {
+                pullAddon = "Basic UI"
               }
             }
 
