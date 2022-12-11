@@ -16,11 +16,11 @@ task buildChangelog {
     def outputText = ""
     def stringsFile = new File("./build/changelog.md")
 
-    def openHABMilestone = "2.5"
-    def legacyMilestone = "1.14.0"
-    def eclipseFromDate = "2018-12-16"
-    def eclipseToDate = "2019-12-15"
-    def mergedString = "%20is:merged"
+    def openHABMilestone = "3.4"
+    def fromDate = "2022-11-07"
+    def toDate = "2022-11-27"
+    //def mergedString = "%20is:merged"
+    def mergedString = "%20merged:${fromDate}..${toDate}"
 
     def fullChangeList = []
 
@@ -31,61 +31,31 @@ task buildChangelog {
         "milestone" : "${openHABMilestone}",
         "repos" : [
           [
-            "name" : "openhab-distro"
-          ],[
             "name" : "openhab-core"
           ]
         ]
       ],[
-        "type" : "2.x add-ons",
+        "type" : "uis",
         "orgName" : "openhab",
         "milestone" : "${openHABMilestone}",
         "repos" : [
           [
-            "name" : "openhab2-addons",
-          ],[
             "name" : "openhab-webui",
-          ],[
-            "name" : "org.openhab.ui.habmin",
-            "addonName" : "HABmin"
-          ],[
-            "name" : "org.openhab.ui.habpanel",
-            "addonName" : "HABPanel"
-          ],[
-            "name" : "org.openhab.ui.habot",
-            "addonName" : "HABot"
+          ]
+        ]
+      ],[
+        "type" : "add-ons",
+        "orgName" : "openhab",
+        "milestone" : "${openHABMilestone}",
+        "repos" : [
+          [
+            "name" : "openhab-addons",
           ],[
             "name" : "org.openhab.binding.zigbee",
             "addonName" : "Zigbee"
           ],[
             "name" : "org.openhab.binding.zwave",
             "addonName" : "ZWave"
-          ]
-        ]
-      ],[
-        "type" : "1.x legacy add-ons",
-        "orgName" : "openhab",
-        "milestone" : "${legacyMilestone}",
-        "repos" : [
-          [
-            "name" : "openhab1-addons"
-          ]
-        ]
-      ],[
-        "name" : "Eclipse SmartHome",
-        "orgName" : "eclipse",
-        "type" : "mixed",
-        "milestone" : "",
-        "repos": [
-          [
-            "name" :"smarthome",
-            "label" : "%20label:%22New%20Contribution%22"
-          ],[
-            "name" :"smarthome",
-            "label" : "%20label:%22enhancement%22"
-          ],[
-            "name" :"smarthome",
-            "label" : "%20label:%22bug%22"
           ]
         ]
       ]
@@ -106,11 +76,6 @@ task buildChangelog {
         def labelString = ""
         def repoName = repo.name
         def addonName = repo.addonName
-
-        if (repoName == "smarthome") {
-          mergedString = "%20merged:${eclipseFromDate}..${eclipseToDate}"
-          labelString = repo.label
-        }
 
         def searchesLeft = 1
         def pageNumber = 1
@@ -151,7 +116,7 @@ task buildChangelog {
             } else if (repo.addonName) {
               pullAddon = repo.addonName
             } else {
-              pullAddon = "Misc"
+              pullAddon = "misc"
             }
 
             if (repoName == "openhab-core"){
@@ -162,7 +127,7 @@ task buildChangelog {
             pullRequest.labels.each { label ->
               switch(label.name.toLowerCase())
               {
-                case "bug":
+               case "bug":
                   pullType="bug"
                   break
                 case "enhancement":
@@ -176,7 +141,7 @@ task buildChangelog {
                     def addonTypeURL
                     pullType = "new"
                     addonType = Matcher.lastMatcher[0][1].trim().capitalize()
-                    if (addonType == "Contribution"){ addonType = "Binding" }
+                    if (addonType == "Contribution") { addonType = "Binding" }
                     if (addonType == "Transform") { addonType = "Transformation" }
                     if ((addonType != "Voice") && (addonType != "Persistence")) {
                       addonTypeURL = (addonType + "s").toLowerCase()
@@ -200,13 +165,20 @@ task buildChangelog {
               }
             }
 
-            // Try to sort the Eclipse/SmartHome repo into other categories
-            if (((repoName == "smarthome") || (repoName == "openhab-core")) && ((pullType == "bug") || (pullType == "enhancement") || (pullType == "feature"))) {
-              if ((pullAddon == "Misc") || (pullAddon.toLowerCase() == "core")) {
+            // Try to sort the core repo into other categories
+            if (((repoName == "openhab-core")) && ((pullType == "bug") || (pullType == "enhancement") || (pullType == "feature"))) {
+              if ((pullAddon == "misc") || (pullAddon.toLowerCase() == "core")) {
                 pullCategory = "core"
                 pullAddon = "Core"
               } else {
-                pullCategory = "2.x add-ons"
+                pullCategory = "add-ons"
+              }
+            }
+
+            // Assign UI PRs to the Main UI
+            if (repoName == "openhab-webui") {
+              if (pullAddon == "misc") {
+                pullAddon = "Main UI"
               }
             }
 
@@ -264,18 +236,22 @@ task buildChangelog {
       outputText = outputText + "| [**${it.addon}**](${it.docs}) | ${it.class} | [#${it.number}](${it.url}) |\n"
     }
 
-    outputText = outputText + "\nThe following improvements were also made:\n"
+    outputText = outputText + "\nThe following improvements were made:\n"
 
-    ["Core", "2.x Add-ons", "1.x Legacy Add-ons"].each {categoryName ->
+    ["Core", "Add-ons", "UIs"].each {categoryName ->
 
       if (categoryName == "Core") {
         outputText = outputText + "\n### Runtime\n\n"
         outputText = outputText + "| Type | Issue | Change |\n"
         outputText = outputText + "|-|-|-|\n"
+      } else if (categoryName == "UIs") {
+        outputText = outputText + "\n### User Interfaces\n\n"
+        outputText = outputText + "| UI | Type | Issue | Change |\n"
+        outputText = outputText + "|-|-|-|-|\n"
       } else {
-      outputText = outputText + "\n### ${categoryName}\n\n"
-      outputText = outputText + "| Add-on | Type | Issue | Change |\n"
-      outputText = outputText + "|-|-|-|-|\n"
+        outputText = outputText + "\n### ${categoryName}\n\n"
+        outputText = outputText + "| Add-on | Type | Issue | Change |\n"
+        outputText = outputText + "|-|-|-|-|\n"
       }
       sortedList = fullChangeList.findAll{it.type != "new"}.findAll{it.category == "${categoryName.toLowerCase()}"}.sort{it.type}.reverse().sort{it.addon.toLowerCase()}
 
