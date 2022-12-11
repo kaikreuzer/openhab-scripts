@@ -148,7 +148,7 @@ task buildChangelog {
                     } else {
                       addonTypeURL = addonType.toLowerCase()
                     }
-                    docsURL = "https://www.openhab.org/addons/${addonTypeURL}/${pullAddon}/"
+                    docsURL = "https://next.openhab.org/addons/${addonTypeURL}/${pullAddon}/"
 
                     def url = docsURL.toURL()
                     Pattern htmlPattern = Pattern.compile(".*<title>(.*) - .* \\| openHAB<\\/title>")
