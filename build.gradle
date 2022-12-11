@@ -227,9 +227,9 @@ task buildChangelog {
     fullChangeList = new JsonSlurper().parseText(changeFileText)
     */
 
-    outputText = outputText + "## openHAB ${openHABMilestone} Changelog\n\n"
+    outputText = outputText + "This is a monthly milestone build for the upcoming openHAB ${openHABMilestone} release, which brings many fixes and improvements.\n\n"
     outputText = outputText + "### New Add-ons\n\n"
-    outputText = outputText + "The following add-ons are newly introduced with the ${openHABMilestone} release:\n\n"
+    outputText = outputText + "The following add-ons are newly introduced:\n\n"
     outputText = outputText + "| Add-on | Type | Issue |\n"
     outputText = outputText + "|-|-|-|\n"
 
