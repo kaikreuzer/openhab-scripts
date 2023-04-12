@@ -17,9 +17,9 @@ task buildChangelog {
     def stringsFile = new File("./build/changelog.md")
 
     def openHABMilestone = "4.0"
-    def openHABPatch = "3.4.1"
-    def fromDate = "2022-12-19"
-    def toDate = "2023-01-08"
+    def openHABPatch = "3.4.3"
+    def fromDate = "2023-01-13"
+    def toDate = "2023-04-13"
     def mergedString = "%20merged:${fromDate}..${toDate}"
 
     def fullChangeList = []
@@ -73,7 +73,7 @@ task buildChangelog {
       category.repos.each { repo ->
 
         def curlURL = ""
-        def labelString = ""
+        def labelString = "%20label:%22patch%22%20-label:%22regression%22"
         def repoName = repo.name
         def addonName = repo.addonName
 
@@ -82,7 +82,7 @@ task buildChangelog {
         def pageString = ""
 
         while (searchesLeft > 0) {
-          curlURL = "https://api.github.com/search/issues?q=repo:${orgName}/${repoName}%20is:pr${mergedString}${milestoneString}${labelString}&per_page=100${pageString}"
+          curlURL = "https://api.github.com/search/issues?q=repo:${orgName}/${repoName}%20is:pr${mergedString}${labelString}&per_page=100${pageString}"
           print "Parsing: ${orgName}/${repoName} (Milestone ${milestone}, Page ${pageNumber}"
           def curlOutput = new ByteArrayOutputStream()
           exec {
@@ -128,8 +128,11 @@ task buildChangelog {
             pullRequest.labels.each { label ->
               switch(label.name.toLowerCase())
               {
-               case "patch":
+               case "bug":
                   pullType="bug"
+                  break
+                case "enhancement":
+                  pullType="enhancement"
                   break
               }
             }
